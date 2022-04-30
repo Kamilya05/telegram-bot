@@ -1,5 +1,5 @@
 import logging
-from math import *
+from math import sin, cos, tan, radians, log, factorial, gcd
 from telegram.ext import MessageHandler, Filters, ConversationHandler
 from telegram import ReplyKeyboardMarkup
 from telegram import ReplyKeyboardRemove, Update
@@ -13,9 +13,13 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 TOKEN = '5345895427:AAG1bO9iRxMp-HVm0PQO3ZC3PJQ8ygb3C4I'
+# https://t.me/Legend_of_the_MathBot
 
 
 def start(update, _):
+    user = update.message.from_user
+    logger.info("Пользователь %s начал разговор.", user.first_name)
+
     update.message.reply_text(
         "Я бот-справочник. Какая информация вам нужна?",
         reply_markup=menu_markup()
@@ -30,16 +34,17 @@ def help_(update, _):
 /start - начать 
 /exit - завершить работу
 
+Время работы: круглосуточно.
 По всем вопросам к @Duchess_Hrushess''')
     return MENU
 
 
 def menu_markup():
     reply_keyboard = [
-                      ['Таблицы'],
-                      ['Калькулятор'],
-                      ['Геометрия'],
-                      ['Тригонометрия'],
+                      ['Таблицы📝'],
+                      ['Калькулятор🧮'],
+                      ['Геометрия💠'],
+                      ['Тригонометрия📐'],
                       ['/exit']
     ]
 
@@ -213,7 +218,8 @@ S = площади всех треугольников и основания
 S(треугольника) = (а*h)/2
 S основания вычисляется в зависимости от его формы, универсальной формулы нет.
 
-https://ru.wikipedia.org/wiki/%D0%9F%D0%B8%D1%80%D0%B0%D0%BC%D0%B8%D0%B4%D0%B0''',
+https://ru.wikipedia.org/wiki/%D0%9F%D0%B8%D1%80%D0%B0%D0%BC%D0%B8%D0%B4%D0%B0_''' +
+                                     '(%D0%B3%D0%B5%D0%BE%D0%BC%D0%B5%D1%82%D1%80%D0%B8%D1%8F)',
                                 reply_markup=reply_markup)
     elif query.data == 'g31':
         query.edit_message_text(text='''Квадрат.
@@ -409,7 +415,7 @@ def calc(update, _):
 def calc_choice(update, context):
     global op
     reply_keyboard = [
-                      ['Отмена']
+                      ['Отмена❌']
     ]
 
     markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False)
@@ -544,9 +550,7 @@ def cancel(update, context):
 def exit_(update, _):
     # определяем пользователя
     user = update.message.from_user
-    # Пишем в журнал о том, что пользователь не разговорчивый
     logger.info("Пользователь %s отменил разговор.", user.first_name)
-    # Отвечаем на отказ поговорить
     reply_keyboard = [
                       ['/start'],
                       ['/help']]
@@ -573,21 +577,21 @@ if __name__ == '__main__':
         states={
             MENU: [
                    CommandHandler('start', start),
-                   MessageHandler(Filters.regex('^(Таблицы)$'), tables),
+                   MessageHandler(Filters.regex('^(Таблицы📝)$'), tables),
                    CallbackQueryHandler(tables_answer, pattern='^(sq|sq2|sq3|ln|log|lg|'
                                                                'brad|brad1|brad2)$'),
-                   MessageHandler(Filters.regex('^(Геометрия)$'), geometry),
+                   MessageHandler(Filters.regex('^(Калькулятор🧮)$'), calc),
+                   CallbackQueryHandler(calc_choice, pattern='^(c1|c2|c3|c4.1|c4.2|c5.1|c5.2|c6|c7.1|'
+                                                             'c7.2|c8.1|c8.2|c9|c10.1|c10.2|c11)$'),
+                   MessageHandler(Filters.regex('^(Геометрия💠)$'), geometry),
                    CallbackQueryHandler(geometry, pattern='^(return_1)$'),
                    CallbackQueryHandler(geometry_answer, pattern='^(g11|g12|g21|g22|g31|g32|g41|g42|'
                                                                  'g51|g52|g61|g62|g71|g72|g81|g82)$'),
-                   MessageHandler(Filters.regex('^(Тригонометрия)$'), trigonometric),
-                   MessageHandler(Filters.regex('^(Калькулятор)$'), calc),
-                   CallbackQueryHandler(calc_choice, pattern='^(c1|c2|c3|c4.1|c4.2|c5.1|c5.2|c6|c7.1|'
-                                                             'c7.2|c8.1|c8.2|c9|c10.1|c10.2|c11)$')
+                   MessageHandler(Filters.regex('^(Тригонометрия📐)$'), trigonometric)
                    ],
             CALC: [CallbackQueryHandler(calc_choice, pattern='^(c1|c2|c3|c4.1|c4.2|c5.1|c5.2|c6|c7.1|'
                                                              'c7.2|c8.1|c8.2|c9|c10.1|c10.2|c11)$'),
-                   MessageHandler(Filters.regex('^(Отмена)$'), cancel),
+                   MessageHandler(Filters.regex('^(Отмена❌)$'), cancel),
                    MessageHandler(Filters.text, calc_input)
                    ]
         },
